@@ -4,6 +4,8 @@ const TOML = require('@iarna/toml')
 
 // Here we store all our knowledge of crates that we have come across.
 let crates = {}
+const KNOWN_FEATURES = ["std", "runtime-benchmarks", "try-runtime"];
+
 
 // This allows us to get all files with a specific extension within a directory and subdirectories.
 function getFilesFromPath(path, extension) {
@@ -17,13 +19,27 @@ function storeCrate(toml) {
 
 	let name = toml.package.name;
 	let version = toml.package.version;
-	let features = toml.features && Object.keys(toml.features);
+
+	let features = [];
+	let used_features = [];
+
+	if (toml.features) {
+		for ([feature, items] of Object.entries(toml.features)) {
+			features.push(feature);
+
+			// If the feature does not activate any other features, we consider it "unused".
+			if (items.length > 0) {
+				used_features.push(feature)
+			}
+		}
+
+	}
 
 	if (crates[name] && crates[name].direct) {
 		console.error(`Duplicate crate ${name}`);
 	}
 
-	crates[name] = { name, version, features, direct: true };
+	crates[name] = { name, version, features, used_features, direct: true };
 }
 
 // Check that within a crate, a dependency is included properly with a feature.
@@ -32,8 +48,8 @@ function isInFeature(toml, dep, feature) {
 }
 
 // Check our knowledge of a crate containing a feature.
-function isCrateFeature(dep, feature) {
-	return crates[dep] && crates[dep].features && crates[dep].features.includes(feature);
+function isCrateFeatureUsed(dep, feature) {
+	return crates[dep] && crates[dep].features && crates[dep].used_features.includes(feature);
 }
 
 // Using an import from a crate, populate information about that crate.
@@ -43,7 +59,7 @@ function storeIndirectCrate(toml) {
 	for ([dep, properties] of Object.entries(toml.dependencies)) {
 		// Make sure that we don't run into null issues.
 		if (!crates[dep]) {
-			crates[dep] = { name: dep, features: [], version: null, direct: false }
+			crates[dep] = { name: dep, features: [], used_features: [], version: null, direct: false }
 		}
 
 		// If we got direct information about a crate, we should not try to overwrite any info.
@@ -51,10 +67,13 @@ function storeIndirectCrate(toml) {
 			return
 		}
 
-		// Basically we want to see if any other crate used this dependency enabling the std feature.
-		// If so, we can assume this crate probably has the "std" feature.
-		if (isInFeature(toml, dep, "std")) {
-			crates[dep].features.push("std")
+		// Basically we want to see if any other crate used this dependency enabling a feature.
+		// If so, we can assume this crate probably has the that feature.
+		for (feature of KNOWN_FEATURES) {
+			if (isInFeature(toml, dep, feature)) {
+				crates[dep].features.push(feature)
+				crates[dep].used_features.push(feature)
+			}
 		}
 
 	}
@@ -67,9 +86,8 @@ function checkDependencyFeatures(toml) {
 	if (!toml.dependencies) { return }
 
 	for ([dep, properties] of Object.entries(toml.dependencies)) {
-		let feature_checks = ["std", "runtime-benchmarks", "try-runtime"];
-		for (feature of feature_checks) {
-			if (isCrateFeature(dep, feature)) {
+		for (feature of KNOWN_FEATURES) {
+			if (isCrateFeatureUsed(dep, feature)) {
 				let is_optional = properties.hasOwnProperty('optional') && properties['optional'];
 
 				// Check `default-features = false`
