@@ -5,7 +5,7 @@
   "author": "Shawn Tabrizi <shawntabrizi@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@iarna/toml": "^2.2.5",
+    "@ltd/j-toml": "^1.30.0",
     "glob": "^8.0.1",
     "yargs": "^17.4.1"
   },
