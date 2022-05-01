@@ -14,12 +14,13 @@ function sortObject(o, func) {
 
 function lintPackage(toml) {
 	if (!toml.package) { return }
-	if (toml.package.authors && toml.package.authors[0] != "Parity Technologies <admin@parity.io>") {
-		toml.package.authors = ["Parity Technologies <admin@parity.io>"]
-	}
+	// TODO add back author logic
+	// if (toml.package.authors && toml.package.authors[0] != "Parity Technologies <admin@parity.io>") {
+	// 	toml.package.authors = ["Parity Technologies <admin@parity.io>"]
+	// }
 	toml.package.edition = "2021";
 	toml.package.homepage = "https://substrate.io"
-	toml.package.repository = "https://github.com/paritytech/substrate/";
+	// toml.package.repository = "https://github.com/paritytech/substrate/";
 	// TODO add logic for license
 }
 
@@ -28,13 +29,20 @@ function lintToml(toml) {
 	lintPackage(toml)
 
 	// Sort all dependencies
-	if (toml.dependencies) {
-		toml.dependencies = TOML.Section(sortObject(toml.dependencies));
-	}
-
-	// Sort all dev-dependencies
-	if (toml["dev-dependencies"]) {
-		toml["dev-dependencies"] = TOML.Section(sortObject(toml["dev-dependencies"]));
+	let dep_types = ["dependencies", "dev-dependencies"];
+	for (dep_type of dep_types) {
+		if (toml[dep_type]) {
+			if (Object.entries(toml[dep_type]).length == 0) {
+				delete toml[dep_type];
+				continue;
+			}
+			toml[dep_type] = TOML.Section(sortObject(toml[dep_type]));
+			for ([dep, items] of Object.entries(toml[dep_type])) {
+				if (items != null && typeof items === 'object') {
+					toml[dep_type][dep] = TOML.inline(sortObject(items));
+				}
+			}
+		}
 	}
 
 	// Sort all features
