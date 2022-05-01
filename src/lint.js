@@ -58,8 +58,6 @@ async function doLint(path) {
 
 	// Parse all crates
 	for (file of files) {
-		// skip target directories
-		if (file.includes("/target/")) { continue }
 		let text = fs.readFileSync(file);
 		// skip any files with comments
 		if (text.includes("#")) { continue }

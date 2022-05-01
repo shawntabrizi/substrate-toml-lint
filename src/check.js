@@ -1,9 +1,7 @@
 const fs = require('fs');
 const TOML = require('@ltd/j-toml');
 let { getFilesFromPath } = require("./helpers");
-
-// Here we store all our knowledge of crates that we have come across.
-let crates = {}
+let crates = require('./known_crates.json');
 const KNOWN_FEATURES = ["std", "runtime-benchmarks", "try-runtime"];
 
 // Given a direct crate definition, store relevant information about it.
@@ -18,17 +16,13 @@ function storeCrate(toml) {
 
 	if (toml.features) {
 		for ([feature, items] of Object.entries(toml.features)) {
-			features.push(feature);
+			features.indexOf(feature) === -1 && features.push(feature);
 
 			// If the feature does not activate any other features, we consider it "unused".
 			if (items.length > 0) {
-				used_features.push(feature)
+				used_features.indexOf(feature) === -1 && used_features.push(feature)
 			}
 		}
-	}
-
-	if (crates[name] && crates[name].direct) {
-		console.error(`Duplicate crate ${name}`);
 	}
 
 	crates[name] = { name, version, features, used_features, direct: true };
@@ -63,8 +57,8 @@ function storeIndirectCrate(toml) {
 		// If so, we can assume this crate probably has the that feature.
 		for (feature of KNOWN_FEATURES) {
 			if (isInFeature(toml, dep, feature)) {
-				crates[dep].features.push(feature)
-				crates[dep].used_features.push(feature)
+				crates[dep].features.indexOf(feature) === -1 && crates[dep].features.push(feature);
+				crates[dep].used_features.indexOf(feature) === -1 && crates[dep].used_features.push(feature);
 			}
 		}
 
@@ -100,7 +94,7 @@ function checkDependencyFeatures(toml) {
 	}
 }
 
-async function doCheck(path) {
+async function doCheck(path, crate) {
 	let files = getFilesFromPath(path, "toml");
 
 	// First parse all crates
@@ -116,8 +110,25 @@ async function doCheck(path) {
 	for (file of files) {
 		let text = fs.readFileSync(file);
 		let toml = TOML.parse(text);
+		if (crate && toml.package && toml.package.name != crate) { continue }
 		checkDependencyFeatures(toml);
 	}
 }
 
-module.exports = { doCheck, };
+async function doSave(path) {
+	let files = getFilesFromPath(path, "toml");
+
+	// First parse all crates
+	for (file of files) {
+		let text = fs.readFileSync(file);
+		let toml = TOML.parse(text);
+
+		storeCrate(toml);
+		storeIndirectCrate(toml);
+	}
+
+	// TODO make better
+	fs.writeFileSync("./known_crates.json", JSON.stringify(crates, null, 2));
+}
+
+module.exports = { doCheck, doSave };
