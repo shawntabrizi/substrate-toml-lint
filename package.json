@@ -1,5 +1,5 @@
 {
-  "name": "substrate-toml-check",
+  "name": "substrate-toml-lint",
   "version": "1.0.0",
   "main": "src/index.js",
   "author": "Shawn Tabrizi <shawntabrizi@gmail.com>",

@@ -1,4 +1,4 @@
-# substrate-toml-check
+# substrate-toml-lint
 
 A toml parser and checker to avoid common errors in Substrate projects.
 
