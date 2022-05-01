@@ -56,19 +56,20 @@ function lintToml(toml) {
 async function doLint(path) {
 	let files = getFilesFromPath(path, "toml");
 
-	// First parse all crates
+	// Parse all crates
 	for (file of files) {
 		let text = fs.readFileSync(file);
+		// skip any files with comments
+		// if (text.includes("#")) { continue }
+
 		let toml = TOML.parse(text, { x: { comment: true } });
 
-		lintToml(toml)
+		//lintToml(toml)
 
-		// turn it back to text
 		let new_text_array = TOML.stringify(toml, { newlineAround: "section" });
-
 		// remove first empty newline
 		new_text_array.splice(0, 1);
-
+		// turn it back to text
 		let new_text = new_text_array.join("\n");
 
 		fs.writeFileSync(file, new_text);
