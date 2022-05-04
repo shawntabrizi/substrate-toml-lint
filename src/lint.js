@@ -12,16 +12,81 @@ function sortObject(o, func) {
 	return sorted_object
 }
 
+function dependencyPropertySort(a, b) {
+	let ordering = {}; // map for efficient lookup of sortIndex
+	let sortOrder = ['package', 'version', 'default-features', 'features', 'optional', 'path'];
+	for (var i = 0; i < sortOrder.length; i++) {
+		ordering[sortOrder[i]] = i;
+	}
+
+	return (ordering[a] - ordering[b]) || a.localeCompare(b);
+}
+
+function dependencySort(dependencies) {
+	return function (a, b) {
+		if (dependencies[a]["path"] && !dependencies[b]["path"]) {
+			return 1
+		}
+
+		if (!dependencies[a]["path"] && dependencies[b]["path"]) {
+			return -1
+		}
+
+		return a.localeCompare(b)
+	}
+}
+
 function lintPackage(toml) {
 	if (!toml.package) { return }
 	// TODO add back author logic
 	// if (toml.package.authors && toml.package.authors[0] != "Parity Technologies <admin@parity.io>") {
 	// 	toml.package.authors = ["Parity Technologies <admin@parity.io>"]
 	// }
-	toml.package.edition = "2021";
-	toml.package.homepage = "https://substrate.io"
+	toml.package.edition = TOML.literal(`"2021"`);
+	toml.package.homepage = TOML.literal(`"https://substrate.io"`)
 	// toml.package.repository = "https://github.com/paritytech/substrate/";
 	// TODO add logic for license
+}
+
+function isJson(item) {
+	item = typeof item !== "string"
+		? JSON.stringify(item)
+		: item;
+
+	try {
+		item = JSON.parse(item);
+	} catch (e) {
+		return false;
+	}
+
+	if (typeof item === "object" && item !== null) {
+		return true;
+	}
+
+	return false;
+}
+
+// Tries to add a newline between blocks of dependencies which share a prefix
+function addSeparator(textArray) {
+	for (let i = textArray.length - 1; i >= 0; i--) {
+		let line = textArray[i];
+		let maybePrefix = line.match(/^([A-Za-z]+)-/g);
+		if (maybePrefix && line.includes("path =")) {
+			let firstIndex = i;
+			let total = 0;
+			let prefix = maybePrefix[0];
+			while (textArray[i].startsWith(prefix)) {
+				total++;
+				i--;
+			}
+
+			if (total > 1) {
+				if (!textArray[i].startsWith('[')) {
+					textArray.splice(i + 1, 0, "");
+				}
+			}
+		}
+	}
 }
 
 function lintToml(toml) {
@@ -36,10 +101,12 @@ function lintToml(toml) {
 				delete toml[dep_type];
 				continue;
 			}
-			toml[dep_type] = TOML.Section(sortObject(toml[dep_type]));
-			for ([dep, items] of Object.entries(toml[dep_type])) {
-				if (items != null && typeof items === 'object') {
-					toml[dep_type][dep] = TOML.inline(sortObject(items));
+			if (isJson(toml[dep_type])) {
+				toml[dep_type] = TOML.Section(sortObject(toml[dep_type], dependencySort(toml[dep_type])));
+				for ([dep, items] of Object.entries(toml[dep_type])) {
+					if (isJson(items)) {
+						toml[dep_type][dep] = TOML.inline(sortObject(items, dependencyPropertySort));
+					}
 				}
 			}
 		}
@@ -64,11 +131,15 @@ async function doLint(path) {
 
 		let toml = TOML.parse(text, { x: { comment: true, literal: true } });
 
-		//lintToml(toml)
+		lintToml(toml)
 
 		let new_text_array = TOML.stringify(toml, { newlineAround: "section" });
 		// remove first empty newline
 		new_text_array.splice(0, 1);
+
+		// add newline separators between toml sections
+		// addSeparator(new_text_array);
+
 		// turn it back to text
 		let new_text = new_text_array.join("\n");
 
