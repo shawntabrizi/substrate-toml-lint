@@ -1,6 +1,6 @@
 const fs = require('fs');
 const TOML = require('@ltd/j-toml');
-let { getFilesFromPath } = require("./helpers");
+let { getFilesFromPath, doParse, doStringify } = require("./helpers");
 let crates = require('./known_crates.json');
 const KNOWN_FEATURES = ["std", "runtime-benchmarks", "try-runtime"];
 
@@ -30,7 +30,11 @@ function storeCrate(toml) {
 
 // Check that within a crate, a dependency is included properly with a feature.
 function isInFeature(toml, dep, feature) {
-	return toml.features && toml.features[feature] && toml.features[feature].includes(`${dep}/${feature}`)
+	if (!(toml.features && toml.features[feature])) {
+		return false
+	}
+	let features = JSON.stringify(toml.features[feature])
+	return features.includes(`${dep}/${feature}`)
 }
 
 // Check our knowledge of a crate containing a feature.
@@ -65,14 +69,28 @@ function storeIndirectCrate(toml) {
 	}
 }
 
+function doAddMissingFeature(toml, feature, dep) {
+	if (!toml["features"]) {
+		return
+	}
+
+	if (!toml["features"][feature]) {
+		return
+	}
+
+	toml["features"][feature].push(TOML.literal(`"${dep}/${feature}"`));
+}
+
 // Check that each dependency has all of its features properly enabled
-function checkDependencyFeatures(toml) {
+function checkDependencyFeatures(toml, features) {
 	let is_crate_no_std = toml.features && toml.features['std'];
 	if (!is_crate_no_std) { return }
 	if (!toml.dependencies) { return }
 
+	let check_features = [features] || KNOWN_FEATURES;
+
 	for ([dep, properties] of Object.entries(toml.dependencies)) {
-		for (feature of KNOWN_FEATURES) {
+		for (feature of check_features) {
 			if (isCrateFeatureUsed(dep, feature)) {
 				let is_optional = properties['optional'];
 
@@ -87,6 +105,7 @@ function checkDependencyFeatures(toml) {
 						console.error(`Maybe missing ${feature} for optional ${dep} in ${toml.package.name}`)
 					} else {
 						console.error(`Missing ${feature} for ${dep} in ${toml.package.name}`)
+						doAddMissingFeature(toml, feature, dep)
 					}
 				}
 			}
@@ -94,13 +113,13 @@ function checkDependencyFeatures(toml) {
 	}
 }
 
-async function doCheck(path, crate) {
+async function doCheck(path, crate, features) {
 	let files = getFilesFromPath(path, "toml");
 
 	// First parse all crates
 	for (file of files) {
 		let text = fs.readFileSync(file);
-		let toml = TOML.parse(text);
+		let toml = doParse(text);
 
 		storeCrate(toml);
 		storeIndirectCrate(toml);
@@ -109,9 +128,37 @@ async function doCheck(path, crate) {
 	// Then use all crate info to check imports are accurate
 	for (file of files) {
 		let text = fs.readFileSync(file);
-		let toml = TOML.parse(text);
+		let toml = doParse(text);
 		if (crate && toml.package && toml.package.name != crate) { continue }
-		checkDependencyFeatures(toml);
+		checkDependencyFeatures(toml, features);
+	}
+}
+
+async function doWrite(path, crate, features) {
+	let files = getFilesFromPath(path, "toml");
+
+	// First parse all crates
+	for (file of files) {
+		let text = fs.readFileSync(file);
+		let toml = doParse(text);
+
+		storeCrate(toml);
+		storeIndirectCrate(toml);
+	}
+
+	// Then use all crate info to check imports are accurate
+	for (file of files) {
+		let text = fs.readFileSync(file);
+
+		// skip any files with comments
+		if (text.includes("#")) { continue }
+
+		let toml = doParse(text);
+		if (crate && toml.package && toml.package.name != crate) { continue }
+		checkDependencyFeatures(toml, features);
+
+		let new_text = doStringify(toml);
+		fs.writeFileSync(file, new_text);
 	}
 }
 
@@ -121,7 +168,7 @@ async function doSave(path) {
 	// First parse all crates
 	for (file of files) {
 		let text = fs.readFileSync(file);
-		let toml = TOML.parse(text);
+		let toml = doParse(text);
 
 		storeCrate(toml);
 		storeIndirectCrate(toml);
@@ -131,4 +178,4 @@ async function doSave(path) {
 	fs.writeFileSync("./known_crates.json", JSON.stringify(crates, null, 2));
 }
 
-module.exports = { doCheck, doSave };
+module.exports = { doCheck, doSave, doWrite };
