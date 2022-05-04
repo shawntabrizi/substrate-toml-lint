@@ -62,7 +62,7 @@ async function doLint(path) {
 		// skip any files with comments
 		if (text.includes("#")) { continue }
 
-		let toml = TOML.parse(text, { x: { comment: true } });
+		let toml = TOML.parse(text, { x: { comment: true, literal: true } });
 
 		//lintToml(toml)
 
