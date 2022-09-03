@@ -3,6 +3,10 @@ const TOML = require('@ltd/j-toml');
 
 // This allows us to get all files with a specific extension within a directory and subdirectories.
 function getFilesFromPath(path, extension) {
+	// Shortcut to detect a file not a path
+	if (path.endsWith(extension)) {
+		return [path]
+	}
 	let files = glob.sync(path + `/**/*.${extension}`);
 	// skip target directories
 	files = files.filter(file => !file.includes("/target/"));
