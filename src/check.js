@@ -81,6 +81,12 @@ function doAddMissingFeature(toml, feature, dep) {
 	toml["features"][feature].push(TOML.literal(`"${dep}/${feature}"`));
 }
 
+function doAddDefaultFeatures(toml, dep) {
+	if (!toml.dependencies[dep]["optional"]) {
+		toml.dependencies[dep]["default-features"] = false;
+	}
+}
+
 // Check that each dependency has all of its features properly enabled
 function checkDependencyFeatures(toml, features) {
 	let is_crate_no_std = toml.features && toml.features['std'];
@@ -95,8 +101,9 @@ function checkDependencyFeatures(toml, features) {
 				let is_optional = properties['optional'];
 
 				// Check `default-features = false`
-				if (properties['default-features']) {
+				if (properties['default-features'] != false) {
 					console.error(`Missing "default-features = false" for ${dep} in ${toml.package.name}`)
+					doAddDefaultFeatures(toml, dep)
 				}
 
 				// Check feature enabled

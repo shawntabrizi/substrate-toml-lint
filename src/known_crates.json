@@ -24,9 +24,13 @@
     "name": "sc-cli",
     "version": "0.10.0-dev",
     "features": [
+      "default",
+      "rocksdb",
       "wasmtime"
     ],
     "used_features": [
+      "default",
+      "rocksdb",
       "wasmtime"
     ],
     "direct": true
@@ -70,13 +74,13 @@
     "version": "0.10.0-dev",
     "features": [
       "default",
-      "db",
+      "rocksdb",
       "wasmtime",
       "test-helpers"
     ],
     "used_features": [
       "default",
-      "db",
+      "rocksdb",
       "wasmtime"
     ],
     "direct": true
@@ -352,11 +356,13 @@
     "version": "4.0.0-dev",
     "features": [
       "default",
-      "db"
+      "runtime-benchmarks",
+      "rocksdb"
     ],
     "used_features": [
       "default",
-      "db"
+      "runtime-benchmarks",
+      "rocksdb"
     ],
     "direct": true
   },
@@ -432,7 +438,9 @@
       "runtime-benchmarks",
       "try-runtime",
       "no-metadata-docs",
-      "full-metadata-docs"
+      "full-metadata-docs",
+      "tuples-96",
+      "tuples-128"
     ],
     "used_features": [
       "default",
@@ -876,8 +884,12 @@
   },
   "parity-util-mem": {
     "name": "parity-util-mem",
-    "features": [],
-    "used_features": [],
+    "features": [
+      "std"
+    ],
+    "used_features": [
+      "std"
+    ],
     "version": null,
     "direct": false
   },
@@ -1149,12 +1161,10 @@
       "default",
       "test-helpers",
       "runtime-benchmarks",
-      "with-kvdb-rocksdb",
-      "with-parity-db"
+      "rocksdb"
     ],
     "used_features": [
-      "with-kvdb-rocksdb",
-      "with-parity-db"
+      "rocksdb"
     ],
     "direct": true
   },
@@ -1174,7 +1184,7 @@
   },
   "subkey": {
     "name": "subkey",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "features": [],
     "used_features": [],
     "direct": true
@@ -2186,11 +2196,13 @@
     "version": "4.0.0-dev",
     "features": [
       "default",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "used_features": [
       "default",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "direct": true
   },
@@ -2223,7 +2235,8 @@
     "used_features": [
       "debug",
       "default",
-      "keccak"
+      "keccak",
+      "std"
     ],
     "direct": true
   },
@@ -2245,11 +2258,13 @@
     "version": "4.0.0-dev",
     "features": [
       "default",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "used_features": [
       "default",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "direct": true
   },
@@ -2771,10 +2786,12 @@
     "version": "1.0.0",
     "features": [
       "runtime-benchmarks",
+      "try-runtime",
       "default",
       "std"
     ],
     "used_features": [
+      "try-runtime",
       "default",
       "std"
     ],
@@ -2894,12 +2911,14 @@
     "features": [
       "default",
       "runtime-benchmarks",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "used_features": [
       "default",
       "runtime-benchmarks",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "direct": true
   },
@@ -3149,12 +3168,14 @@
     "features": [
       "default",
       "runtime-benchmarks",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "used_features": [
       "default",
       "runtime-benchmarks",
-      "std"
+      "std",
+      "try-runtime"
     ],
     "direct": true
   },
@@ -3462,8 +3483,12 @@
   },
   "merlin": {
     "name": "merlin",
-    "features": [],
-    "used_features": [],
+    "features": [
+      "std"
+    ],
+    "used_features": [
+      "std"
+    ],
     "version": null,
     "direct": false
   },
@@ -3867,6 +3892,259 @@
   },
   "wasm-gc-api": {
     "name": "wasm-gc-api",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "kitchensink-runtime": {
+    "name": "kitchensink-runtime",
+    "version": "3.0.0-dev",
+    "features": [
+      "default",
+      "with-tracing",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime",
+      "contracts-unstable-interface",
+      "wasmer-sandbox"
+    ],
+    "used_features": [
+      "default",
+      "with-tracing",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime",
+      "contracts-unstable-interface",
+      "wasmer-sandbox"
+    ],
+    "direct": true
+  },
+  "finality-grandpa": {
+    "name": "finality-grandpa",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "sc-network-common": {
+    "name": "sc-network-common",
+    "version": "0.10.0-dev",
+    "features": [],
+    "used_features": [],
+    "direct": true
+  },
+  "unsigned-varint": {
+    "name": "unsigned-varint",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "void": {
+    "name": "void",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "sc-network-light": {
+    "name": "sc-network-light",
+    "version": "0.10.0-dev",
+    "features": [],
+    "used_features": [],
+    "direct": true
+  },
+  "sc-network-sync": {
+    "name": "sc-network-sync",
+    "version": "0.10.0-dev",
+    "features": [],
+    "used_features": [],
+    "direct": true
+  },
+  "hyper-rustls": {
+    "name": "hyper-rustls",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "threadpool": {
+    "name": "threadpool",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "parity-util-mem-derive": {
+    "name": "parity-util-mem-derive",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "pallet-alliance": {
+    "name": "pallet-alliance",
+    "version": "4.0.0-dev",
+    "features": [
+      "default",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime"
+    ],
+    "used_features": [
+      "default",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime"
+    ],
+    "direct": true
+  },
+  "pallet-nomination-pools-runtime-api": {
+    "name": "pallet-nomination-pools-runtime-api",
+    "version": "1.0.0-dev",
+    "features": [
+      "default",
+      "std"
+    ],
+    "used_features": [
+      "default",
+      "std"
+    ],
+    "direct": true
+  },
+  "pallet-nomination-pools-test-staking": {
+    "name": "pallet-nomination-pools-test-staking",
+    "version": "1.0.0",
+    "features": [],
+    "used_features": [],
+    "direct": true
+  },
+  "pallet-ranked-collective": {
+    "name": "pallet-ranked-collective",
+    "version": "4.0.0-dev",
+    "features": [
+      "default",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime"
+    ],
+    "used_features": [
+      "default",
+      "std",
+      "runtime-benchmarks",
+      "try-runtime"
+    ],
+    "direct": true
+  },
+  "thousands": {
+    "name": "thousands",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "cfg-expr": {
+    "name": "cfg-expr",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "itertools": {
+    "name": "itertools",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "strum": {
+    "name": "strum",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "tracing-core": {
+    "name": "tracing-core",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "ref-cast": {
+    "name": "ref-cast",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "hashbrown": {
+    "name": "hashbrown",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "memory-db": {
+    "name": "memory-db",
+    "features": [
+      "std"
+    ],
+    "used_features": [
+      "std"
+    ],
+    "version": null,
+    "direct": false
+  },
+  "nohash-hasher": {
+    "name": "nohash-hasher",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "trie-db": {
+    "name": "trie-db",
+    "features": [
+      "std"
+    ],
+    "used_features": [
+      "std"
+    ],
+    "version": null,
+    "direct": false
+  },
+  "comfy-table": {
+    "name": "comfy-table",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "gethostname": {
+    "name": "gethostname",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "handlebars": {
+    "name": "handlebars",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "serde_nanos": {
+    "name": "serde_nanos",
+    "features": [],
+    "used_features": [],
+    "version": null,
+    "direct": false
+  },
+  "filetime": {
+    "name": "filetime",
     "features": [],
     "used_features": [],
     "version": null,
